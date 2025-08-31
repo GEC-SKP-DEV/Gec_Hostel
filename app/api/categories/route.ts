@@ -1,9 +1,11 @@
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { categories, categoryOptionValues, hostelOptions } from "@/lib/schema";
-import { sql, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { requireAdmin } from "@/lib/auth/server";
+import { CreateCategorySchema, UpdateCategorySchema } from "@/lib/validation";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const allCategories = await db.select().from(categories);
     
@@ -23,99 +25,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(categoriesWithOptions);
   } catch (error) {
     console.error('Error fetching categories:', error);
-    
-    // Return sample categories for testing when database is not connected
-    if (error instanceof Error && error.message.includes('DATABASE_URL')) {
-      console.log('Database not connected, returning sample categories for testing');
-      return NextResponse.json([
-        {
-          categoryId: 1,
-          categoryName: "Amenities",
-          options: [
-            { optionId: 1, optionName: "Free WiFi" },
-            { optionId: 2, optionName: "Kitchen" },
-            { optionId: 3, optionName: "Laundry" },
-            { optionId: 4, optionName: "Common Room" },
-            { optionId: 5, optionName: "Garden/Terrace" },
-            { optionId: 6, optionName: "Bar" },
-            { optionId: 7, optionName: "Breakfast Included" },
-            { optionId: 8, optionName: "Air Conditioning" },
-            { optionId: 9, optionName: "Heating" },
-            { optionId: 10, optionName: "Luggage Storage" },
-            { optionId: 11, optionName: "24/7 Reception" },
-            { optionId: 12, optionName: "Security Lockers" },
-            { optionId: 13, optionName: "Bicycle Rental" },
-            { optionId: 14, optionName: "Tour Desk" },
-            { optionId: 15, optionName: "BBQ Area" }
-          ]
-        },
-        {
-          categoryId: 2,
-          categoryName: "Room Type",
-          options: [
-            { optionId: 16, optionName: "Dormitory" },
-            { optionId: 17, optionName: "Private Room" },
-            { optionId: 18, optionName: "Double Room" },
-            { optionId: 19, optionName: "Twin Room" },
-            { optionId: 20, optionName: "Single Room" },
-            { optionId: 21, optionName: "Family Room" },
-            { optionId: 22, optionName: "Female Only Dorm" },
-            { optionId: 23, optionName: "Male Only Dorm" },
-            { optionId: 24, optionName: "Mixed Dorm" }
-          ]
-        },
-        {
-          categoryId: 3,
-          categoryName: "Location Type",
-          options: [
-            { optionId: 25, optionName: "City Center" },
-            { optionId: 26, optionName: "Near Train Station" },
-            { optionId: 27, optionName: "Near Airport" },
-            { optionId: 28, optionName: "Beachfront" },
-            { optionId: 29, optionName: "Mountain View" },
-            { optionId: 30, optionName: "Rural Area" },
-            { optionId: 31, optionName: "University District" },
-            { optionId: 32, optionName: "Shopping District" },
-            { optionId: 33, optionName: "Historic District" },
-            { optionId: 34, optionName: "Business District" }
-          ]
-        },
-        {
-          categoryId: 4,
-          categoryName: "Price Range",
-          options: [
-            { optionId: 35, optionName: "Budget ($10-25)" },
-            { optionId: 36, optionName: "Economy ($25-50)" },
-            { optionId: 37, optionName: "Mid-range ($50-100)" },
-            { optionId: 38, optionName: "Premium ($100-200)" },
-            { optionId: 39, optionName: "Luxury ($200+)" }
-          ]
-        },
-        {
-          categoryId: 5,
-          categoryName: "Atmosphere",
-          options: [
-            { optionId: 40, optionName: "Party/Social" },
-            { optionId: 41, optionName: "Quiet/Relaxed" },
-            { optionId: 42, optionName: "Family Friendly" },
-            { optionId: 43, optionName: "Backpacker" },
-            { optionId: 44, optionName: "Digital Nomad" },
-            { optionId: 45, optionName: "Student" },
-            { optionId: 46, optionName: "Eco-friendly" },
-            { optionId: 47, optionName: "Boutique" },
-            { optionId: 48, optionName: "Traditional" }
-          ]
-        }
-      ]);
-    }
-    
     return NextResponse.json({ message: 'Failed to fetch categories.' }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { categoryName, options } = await req.json();
+    await requireAdmin(req);
+    const { categoryName, options } = CreateCategorySchema.parse(await req.json());
 
     const [newCategory] = await db.insert(categories).values({
       category: categoryName
@@ -139,7 +56,8 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const { categoryId, categoryName, options } = await req.json();
+    await requireAdmin(req);
+    const { categoryId, categoryName, options } = UpdateCategorySchema.parse(await req.json());
 
     console.log('PUT /api/categories - Incoming data:', { categoryId, categoryName, options });
 
@@ -208,6 +126,7 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    await requireAdmin(req);
     const { categoryId } = await req.json();
 
     if (!categoryId) {
