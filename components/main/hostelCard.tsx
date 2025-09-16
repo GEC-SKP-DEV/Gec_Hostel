@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarDays, MapPin, Star, Phone, Mail, Globe, DollarSign, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { CalendarDays, MapPin, Star, Phone, Mail, Globe, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { Hostel } from "@/types/project";
 import HostelImageSlider from './HostelImageSlider';
@@ -15,14 +15,21 @@ export default function HostelCard({ hostel }: HostelCardProps) {
     setExpanded(!expanded);
   };
 
-  // Helper to find category option by category name
-  const getCategoryOption = (categoryName: string) => {
-    return hostel.categories?.find(cat => cat.categoryName === categoryName)?.optionName;
+  // Helper to find category option by API category name
+  const getCategoryOption = (categoryKey: string) => {
+    // Map your display label keys to API keys if needed
+    const apiKeyMap: Record<string, string> = {
+      "Amenities": "Amenities",
+      "Gender": "Gender",  // Room Type in API → Gender in UI
+      "Distance": "Distance"  // Distance in API → Distance in UI
+    };
+    const apiKey = apiKeyMap[categoryKey] || categoryKey;
+    return hostel.categories?.find(cat => cat.categoryName === apiKey)?.optionName;
   };
 
   const amenities = getCategoryOption("Amenities");
-  const roomType = getCategoryOption("Room Type");
-  const locationType = getCategoryOption("Location Type");
+  const gender = getCategoryOption("Gender");
+  const distance = getCategoryOption("Distance");
 
   // Get primary image or first image
   const primaryImage = hostel.images?.find(img => img.isPrimary) || hostel.images?.[0];
@@ -32,7 +39,7 @@ export default function HostelCard({ hostel }: HostelCardProps) {
       className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform ${expanded ? "scale-105" : "hover:-translate-y-1"} w-full`}
       onClick={toggleExpand}
     >
-      {/* Image Slider at the top */}
+      {/* Image Slider */}
       {hostel.images && hostel.images.length > 0 ? (
         <HostelImageSlider images={hostel.images} alt={hostel.hostelName} />
       ) : (
@@ -40,6 +47,7 @@ export default function HostelCard({ hostel }: HostelCardProps) {
           {hostel.hostelName.charAt(0)}
         </div>
       )}
+
       <div className="md:flex">
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-6 md:w-1/3 relative">
           {primaryImage && (
@@ -47,12 +55,10 @@ export default function HostelCard({ hostel }: HostelCardProps) {
                  style={{ backgroundImage: `url(${primaryImage.imageUrl})` }} />
           )}
           <div className="relative z-10">
-            <h2 className="text-white text-xl font-semibold mb-2">
-              {hostel.hostelName}
-            </h2>
+            <h2 className="text-white text-xl font-semibold mb-2">{hostel.hostelName}</h2>
             {!expanded && <p className="text-gray-200 text-sm">{hostel.hostelDescription.slice(0, 100) + "..."}</p>}
             
-            {/* Rating Display */}
+            {/* Rating */}
             {hostel.averageRating && (
               <div className="flex items-center space-x-2 mt-4">
                 <div className="flex items-center space-x-1">
@@ -64,12 +70,12 @@ export default function HostelCard({ hostel }: HostelCardProps) {
             )}
 
             {/* Price Range */}
-            {hostel.priceRange && (
+            {/* {hostel.priceRange && (
               <div className="flex items-center space-x-2 mt-2">
                 <DollarSign className="w-4 h-4 text-green-400" />
                 <span className="text-white text-sm">{hostel.priceRange}</span>
               </div>
-            )}
+            )} */}
           </div>
         </div>
 
@@ -78,15 +84,15 @@ export default function HostelCard({ hostel }: HostelCardProps) {
             <div className="flex items-center space-x-3 group">
               <MapPin className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-gray-500 text-xs">Location</p>
-                <p className="text-gray-800 font-medium">{locationType || 'N/A'}</p>
+                <p className="text-gray-500 text-xs">Distance</p>
+                <p className="text-gray-800 font-medium">{distance || 'N/A'}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3 group">
               <CalendarDays className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-gray-500 text-xs">Room Type</p>
-                <p className="text-gray-800 font-medium">{roomType || 'N/A'}</p>
+                <p className="text-gray-500 text-xs">Gender</p>
+                <p className="text-gray-800 font-medium">{gender || 'N/A'}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3 group">
@@ -97,8 +103,8 @@ export default function HostelCard({ hostel }: HostelCardProps) {
               </div>
             </div>
           </div>
-          
-          {/* Contact Information */}
+
+          {/* Contact Info */}
           {expanded && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               {hostel.phoneNumber && (
@@ -124,7 +130,7 @@ export default function HostelCard({ hostel }: HostelCardProps) {
               )}
             </div>
           )}
-          
+
           <div className="mt-4 flex justify-start">
             <Link
               href={hostel.location}
@@ -136,7 +142,7 @@ export default function HostelCard({ hostel }: HostelCardProps) {
               <span>View on Map</span>
             </Link>
           </div>
-          
+
           {expanded && (
             <div className="space-y-4">
               <p className="text-gray-800 text-sm">{hostel.hostelDescription}</p>

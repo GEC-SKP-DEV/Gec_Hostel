@@ -13,7 +13,8 @@
     "drizzle:push": "drizzle-kit push",
     "drizzle:studio": "drizzle-kit studio",
     "drizzle:migrate": "drizzle-kit migrate",
-    "drizzle:seed": "tsx drizzle/seed.ts"
+    "drizzle:seed": "tsx drizzle/seed.ts",
+    "db:seed": "tsx lib/seed.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -25,7 +26,7 @@
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.7.0",
     "clsx": "^2.1.1",
-    "dotenv": "^16.5.0",
+    "dotenv": "^16.6.1",
     "drizzle-kit": "^0.31.1",
     "drizzle-orm": "^0.40.1",
     "firebase": "^11.3.1",

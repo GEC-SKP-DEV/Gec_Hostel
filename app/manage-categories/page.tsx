@@ -79,8 +79,12 @@ export default function ManageCategoriesPage() {
       setCategories(data);
       console.log('Categories fetched and set:', data);
       localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
       console.error("Failed to fetch categories:", e);
     } finally {
       setLoading(false);
@@ -139,7 +143,11 @@ export default function ManageCategoriesPage() {
     } catch (e: any) {
       // This catch block will now primarily handle network errors or other unexpected errors
       // not explicitly handled by the !res.ok branch.
-      setError(e.message || "An unexpected error occurred.");
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
       console.error("Failed to delete category:", e);
       setShowDeleteConfirmModal(false); // Close modal for generic errors
       setCategoryToDeleteId(null);      // Clear id for generic errors
