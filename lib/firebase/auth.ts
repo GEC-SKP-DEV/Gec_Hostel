@@ -24,7 +24,7 @@ export async function signInWithGoogle(): Promise<{ isAdmin: boolean }> {
 
     // Restrict login to only emails from "gecskp.ac.in"
     // Restrict login to only emails from "gecskp.ac.in", except for a specific admin email
-const allowedEmailPattern = /^[a-zA-Z0-9]+@gecskp\.ac\.in$/;
+const allowedEmailPattern = /^[a-zA-Z0-9._%+-]+@gecskp\.ac\.in$/;
 const adminOverrideEmail = "codecompass2024@gmail.com";
 
 if (user.email !== adminOverrideEmail && !allowedEmailPattern.test(user.email)) {

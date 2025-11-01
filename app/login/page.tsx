@@ -1,38 +1,54 @@
 "use client";
 
-import { useState } from 'react';
-import { signInWithGoogle } from '@/lib/firebase/auth';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { onAuthStateChanged  } from "@/lib/firebase/auth";
+import { auth } from "@/lib/firebase/config";
+import { doc, getDoc } from "firebase/firestore";
+import { firestore } from "@/lib/firebase/config";
 
 export default function LoginPage() {
-    const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-    const handleLoginWithGoogle = async () => {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(async (user) => {
+      if (user?.email) {
         setLoading(true);
-    setError('');
         try {
-      await signInWithGoogle();
-    } catch (err: any) {
-      if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
-        setError('Login was cancelled. Please try again.');
-            } else {
-        setError('Login failed. Please try again.');
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
+          // Check Firestore for role
+          const userDocRef = doc(firestore, "adminemail", user.email);
+          const userDoc = await getDoc(userDocRef);
+          const isAdmin = userDoc.exists() && userDoc.data()?.role === "admin";
 
-    return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-                <button
-                    onClick={handleLoginWithGoogle}
-                    disabled={loading}
-        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-        {loading ? 'Logging in...' : 'Login with Google'}
-                </button>
-      {error && <div className="text-red-600 mt-4">{error}</div>}
+          // Redirect based on role
+          router.push(isAdmin ? "/admin" : "/");
+        } catch (err: any) {
+          console.error("Error fetching user role:", err);
+          setError("Failed to fetch user role. Please login again.");
+          await auth.signOut(); // optional: force re-login if role fetch fails
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      {loading ? (
+        <div className="text-blue-600 text-lg">Checking login status...</div>
+      ) : (
+        <div>Please login with Google</div>
+      )}
+      {error && (
+        <div className="mt-4 p-2 bg-red-100 text-red-700 rounded border border-red-300">
+          {error}
         </div>
-    );
+      )}
+    </div>
+  );
 }
