@@ -41,7 +41,7 @@ export default function Home() {
       <div className="flex flex-col md:flex-row p-4 md:p-0">
         <FilterSection onFilterSubmit={setFilters} onClearFilters={handleClearFilters} />
         <div className="flex-1 max-w-7xl px-4 py-6 space-y-8 w-full">
-          <TabSection activeTab={activeTab} onTabChange={setActiveTab} />
+          {/* <TabSection activeTab={activeTab} onTabChange={setActiveTab} /> */}
           <HostelGrid activeTab={activeTab} filters={filters} refreshTrigger={refreshTrigger} />
         </div>
       </div>
