@@ -5,6 +5,7 @@ import Link from "next/link";
 import { onAuthStateChanged } from "@/lib/firebase/auth";
 import { signOut, getAuth, User } from "firebase/auth"; // Adjust the import path based on your Firebase setup
 import { useRouter } from "next/navigation";
+import { ArrowLeftIcon} from "lucide-react";
 
 const Navbar = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -31,7 +32,15 @@ const Navbar = () => {
   return (
     <nav className="bg-white relative z-50 border-b-2 border-black px-4">
       <div className="max-w-screen-xl flex items-center justify-between mx-auto py-5">
-        {/* Logo Section */}
+        <div className="flex justify-start items-center mb-6">
+        <button
+          className="border text-black border-gray-400 rounded-full p-2"
+            onClick={() => router.push("https://gecian-hub.netlify.app/")}
+        >
+          <ArrowLeftIcon className="w-5 h-5" />
+        </button>
+      </div>
+
         <div className="flex flex-row font-poppins font-bold text-[26px] z-10 items-center relative text-black">
           NearBy Hostel 
         </div>
@@ -57,3 +66,5 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+
